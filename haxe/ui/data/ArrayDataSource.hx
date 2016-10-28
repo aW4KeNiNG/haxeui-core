@@ -37,5 +37,13 @@ class ArrayDataSource<T> extends DataSource<T> {
         c._array = _array.copy(); // this is a shallow copy
         return c;
     }
-    
+
+    static public function fromArray<T>(array:Array<T>):ArrayDataSource<T>
+    {
+        var dataSource = new ArrayDataSource<T>();
+        for(value in array)
+            dataSource.add(value);
+
+        return dataSource;
+    }
 }
