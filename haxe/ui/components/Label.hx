@@ -1,6 +1,5 @@
 package haxe.ui.components;
 
-import haxe.ui.core.Component;
 import haxe.ui.components.Label.LabelLayout;
 import haxe.ui.core.Behaviour;
 import haxe.ui.core.Component;
@@ -82,7 +81,10 @@ class Label extends InteractiveComponent implements IClonable<Label> {
 class LabelLayout extends DefaultLayout {
     private override function resizeChildren() {
         if (component.autoWidth == false) {
-            component.getTextDisplay().width = component.componentWidth - paddingLeft - paddingRight;
+            #if !pixijs
+            component.getTextDisplay().width = component.componentWidth;
+            #end
+
             #if openfl // TODO: make not specific
             component.getTextDisplay().multiline = true;
             component.getTextDisplay().wordWrap = true;
