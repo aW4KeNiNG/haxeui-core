@@ -62,7 +62,6 @@ class Component extends ComponentBase implements IComponentBase implements IClon
         var className:String = parts[parts.length - 1].toLowerCase();
         addClass(className, false);
 
-
         // we dont want to actually apply the classes, just find out if native is there or not
         var s = Toolkit.styleSheet.applyClasses(this, false);
         if (s.native != null && hasNativeEntry == true) {
@@ -416,16 +415,16 @@ class Component extends ComponentBase implements IComponentBase implements IClon
     //***********************************************************************************************************
     // Clip rect
     //***********************************************************************************************************
-    private var _clipRect:Rectangle = null;
+    private var _componentClipRect:Rectangle = null;
     /**
      Whether to clip the display of this component
     **/
-    public var clipRect(get, set):Rectangle;
-    private function get_clipRect():Rectangle {
-        return _clipRect;
+    public var componentClipRect(get, set):Rectangle;
+    private function get_componentClipRect():Rectangle {
+        return _componentClipRect;
     }
-    private function set_clipRect(value:Rectangle):Rectangle {
-        _clipRect = value;
+    private function set_componentClipRect(value:Rectangle):Rectangle {
+        _componentClipRect = value;
         handleClipRect(value);
         return value;
     }
@@ -1548,7 +1547,7 @@ class Component extends ComponentBase implements IComponentBase implements IClon
     **/
     @:dox(group="Invalidation related properties and methods")
     public function invalidateLayout() {
-        if (_ready == false) {
+        if (_ready == false || _layout == null) {
             return;
         }
 

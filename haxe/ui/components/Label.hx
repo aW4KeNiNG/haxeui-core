@@ -64,11 +64,9 @@ class Label extends InteractiveComponent implements IClonable<Label> {
             if (style.fontSize != null) {
                 getTextDisplay().fontSize = style.fontSize;
             }
-            #if openfl  //TODO - all platforms
             if (style.textAlign != null) {
                 getTextDisplay().textAlign = style.textAlign;
             }
-            #end
         }
     }
 }
@@ -82,7 +80,7 @@ class LabelLayout extends DefaultLayout {
     private override function resizeChildren() {
         if (component.autoWidth == false) {
             #if !pixijs
-            component.getTextDisplay().width = component.componentWidth;
+            component.getTextDisplay().width = component.componentWidth - paddingLeft - paddingRight;
             #end
 
             #if openfl // TODO: make not specific
