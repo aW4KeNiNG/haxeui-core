@@ -147,6 +147,9 @@ abstract Variant(VariantType) from VariantType {
     }
 
     @:to function toBool() {
+        if (this == null) {
+            return false;
+        }
         return switch(this) {
             case Bool(s): s;
             default: throw "Variant Type Error";
@@ -184,10 +187,30 @@ abstract Variant(VariantType) from VariantType {
         }
         return false; // this.match(Bool(_));
     }
-    
+
     // ************************************************************************************************************
     // OPERATIONS
     // ************************************************************************************************************
+    @:op(A + B)
+    private static function addFloat(lhs:Float, rhs:Variant):Float {
+        return lhs + rhs.toNumber();
+    }
+
+    @:op(A + B)
+    private static function addInt(lhs:Int, rhs:Variant):Int {
+        return lhs + rhs.toInt();
+    }
+
+    @:op(A - B)
+    private static function subtractFloat(lhs:Float, rhs:Variant):Float {
+        return lhs - rhs.toNumber();
+    }
+
+    @:op(A - B)
+    private static function subtractInt(lhs:Int, rhs:Variant):Int {
+        return lhs - rhs.toInt();
+    }
+
     @:op(A + B)
     private function add(rhs:Variant):Variant {
         if (isNumber && rhs.isNumber) {
@@ -425,7 +448,7 @@ abstract Variant(VariantType) from VariantType {
         }
         return true;
     }
-    
+
     public static function toDynamic(v:Variant):Dynamic {
         var d:Dynamic = null;
         if (v != null) {

@@ -1,5 +1,7 @@
 package haxe.ui;
 
+import haxe.ui.components.Button;
+import haxe.ui.components.Image;
 import haxe.ui.core.Component;
 import haxe.ui.core.ComponentClassMap;
 import haxe.ui.core.KeyboardEvent;
@@ -133,6 +135,11 @@ class Toolkit {
                 component.addScriptEvent(propName, propValue);
             } else {
                 if (Reflect.hasField(component, propName) == false) {
+                    if (Std.is(component, Image) && propName == "resource") {
+                        cast(component, Image).resource = propValue;
+                    } else if (Std.is(component, Button) && propName == "icon") {
+                        cast(component, Button).icon = propValue;
+                    }
                     continue;
                 }
 
@@ -170,7 +177,7 @@ class Toolkit {
 
     public static var autoScale:Bool = true;
     public static var autoScaleDPIThreshold:Int = 160;
-    
+
     private static var _scaleX:Float = 0;
     public static var scaleX(get, set):Float;
     private static function get_scaleX():Float {
@@ -180,7 +187,7 @@ class Toolkit {
                 if (dpi > autoScaleDPIThreshold) {
                     _scaleX = dpi / autoScaleDPIThreshold;
                 } else {
-                    _scaleX = 1; 
+                    _scaleX = 1;
                 }
             } else {
                 _scaleX = 1;
@@ -196,7 +203,7 @@ class Toolkit {
         autoScale = false;
         return value;
     }
-    
+
     private static var _scaleY:Float = 0;
     public static var scaleY(get, set):Float;
     private static function get_scaleY():Float {
@@ -206,7 +213,7 @@ class Toolkit {
                 if (dpi > autoScaleDPIThreshold) {
                     _scaleY = dpi / autoScaleDPIThreshold;
                 } else {
-                    _scaleY = 1; 
+                    _scaleY = 1;
                 }
             } else {
                 _scaleY = 1;
@@ -222,7 +229,7 @@ class Toolkit {
         autoScale = false;
         return value;
     }
-    
+
     public static var scale(get, set):Float;
     private static function get_scale():Float {
         return Math.max(scaleX, scaleY);

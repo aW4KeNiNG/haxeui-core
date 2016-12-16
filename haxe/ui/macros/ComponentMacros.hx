@@ -125,13 +125,14 @@ class ComponentMacros {
         if (c.condition != null && new ConditionEvaluator().evaluate(c.condition) == false) {
             return;
         }
-        
+
         var className:String = ComponentClassMap.get(c.type.toLowerCase());
         if (className == null) {
             trace("WARNING: no class found for component: " + c.type);
             return;
         }
 
+        var numberEReg:EReg = ~/^\d+(\.(\d+))?$/;
         var type = Context.getModule(className)[0];
         //trace(className + " = " + MacroHelpers.hasInterface(type, "haxe.ui.core.IDataComponent"));
 
@@ -168,9 +169,12 @@ class ComponentMacros {
             var propExpr = if (propValue == "true" || propValue == "yes" || propValue == "false" || propValue == "no") {
                 macro $v{propValue == "true" || propValue == "yes"};
             } else {
-                var intValue = Std.parseInt(propValue);
-                if (intValue != null) {
-                    macro $v{intValue};
+                if(numberEReg.match(propValue)) {
+                    if(numberEReg.matched(2) != null) {
+                        macro $v{Std.parseFloat(propValue)};
+                    } else {
+                        macro $v{Std.parseInt(propValue)};
+                    }
                 } else {
                     macro $v{propValue};
                 }
