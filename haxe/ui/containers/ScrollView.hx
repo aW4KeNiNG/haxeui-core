@@ -15,7 +15,7 @@ import haxe.ui.layouts.LayoutFactory;
 import haxe.ui.util.Rectangle;
 import haxe.ui.util.Size;
 
-@:dox(icon="/icons/ui-scroll-pane-both.png")
+@:dox(icon = "/icons/ui-scroll-pane-both.png")
 class ScrollView extends Component implements IClonable<ScrollView> {
     public var _contents:Box;
     private var _hscroll:HScroll;
@@ -31,10 +31,10 @@ class ScrollView extends Component implements IClonable<ScrollView> {
         return new ScrollViewLayout();
     }
 
-    private override function createDefaults():Void {
+    private override function createDefaults() {
     }
 
-    private override function create():Void {
+    private override function create() {
         super.create();
         if (native == true) {
             updateScrollRect();
@@ -61,7 +61,7 @@ class ScrollView extends Component implements IClonable<ScrollView> {
         return value;
     }
 
-    private override function createChildren():Void {
+    private override function createChildren() {
         super.createChildren();
         registerEvent(MouseEvent.MOUSE_WHEEL, _onMouseWheel);
         registerEvent(MouseEvent.MOUSE_DOWN, _onMouseDown);
@@ -78,7 +78,7 @@ class ScrollView extends Component implements IClonable<ScrollView> {
         }
     }
 
-    private override function destroyChildren():Void {
+    private override function destroyChildren() {
         if (_hscroll != null) {
             removeComponent(_hscroll);
             _hscroll = null;
@@ -89,13 +89,13 @@ class ScrollView extends Component implements IClonable<ScrollView> {
         }
     }
 
-    private override function onReady():Void {
+    private override function onReady() {
         super.onReady();
         checkScrolls();
         updateScrollRect();
     }
 
-    private override function onResized():Void {
+    private override function onResized() {
         checkScrolls();
         updateScrollRect();
     }
@@ -217,6 +217,10 @@ class ScrollView extends Component implements IClonable<ScrollView> {
         return v;
     }
 
+    public function clearContents() {
+        _contents.removeAllComponents();
+    }
+    
     private function addComponentToSuper(child:Component):Component {
         return super.addComponent(child);
     }
@@ -412,11 +416,11 @@ class ScrollView extends Component implements IClonable<ScrollView> {
         return 0;
     }
 
-    public function checkScrolls():Void {
-        if (isReady == false
-            || horizontalConstraint == null || horizontalConstraint.childComponents.length == 0
-            || verticalConstraint == null || verticalConstraint.childComponents.length == 0
-            || native == true) {
+    public function checkScrolls() {
+        if (isReady == false ||
+            horizontalConstraint == null || horizontalConstraint.childComponents.length == 0 ||
+            verticalConstraint == null || verticalConstraint.childComponents.length == 0 ||
+            native == true) {
             return;
         }
 
@@ -426,7 +430,7 @@ class ScrollView extends Component implements IClonable<ScrollView> {
         if (horizontalConstraint.componentWidth > layout.usableWidth) {
             if (_hscroll != null) {
                 _hscroll.hidden = false;
-                _hscroll.max = horizontalConstraint.componentWidth - layout.usableWidth - hscrollOffset;// _contents.layout.horizontalSpacing;
+                _hscroll.max = horizontalConstraint.componentWidth - layout.usableWidth - hscrollOffset; // _contents.layout.horizontalSpacing;
                 _hscroll.pageSize = (layout.usableWidth / horizontalConstraint.componentWidth) * _hscroll.max;
             }
         } else {
@@ -534,7 +538,7 @@ class ScrollViewLayout extends DefaultLayout {
         super();
     }
 
-    private override function repositionChildren():Void {
+    private override function repositionChildren() {
         var contents:Component = component.findComponent("scrollview-contents", null, false, "css");
         if (contents == null) {
             return;
