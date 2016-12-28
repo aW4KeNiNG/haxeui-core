@@ -87,12 +87,14 @@ class HSlider extends Slider implements IClonable<HSlider> {
 
     private override function _onRangeEndThumbMouseDown(event:MouseEvent) {
         super._onRangeEndThumbMouseDown(event);
-        _mouseDownOffset = event.screenX - _activeThumb.screenLeft + _valueBackground.paddingLeft;
+//        _mouseDownOffset = event.screenX - _activeThumb.screenLeft + _valueBackground.paddingLeft;
+        _mouseDownOffset = (_activeThumb.componentWidth / 2);
     }
 
     private override function _onRangeStartThumbMouseDown(event:MouseEvent) {
         super._onRangeStartThumbMouseDown(event);
-        _mouseDownOffset = event.screenX - _activeThumb.screenLeft + _valueBackground.paddingLeft;
+//        _mouseDownOffset = event.screenX - _activeThumb.screenLeft + _valueBackground.paddingLeft;
+        _mouseDownOffset = (_activeThumb.componentWidth / 2);
     }
 
     private override function _onScreenMouseMove(event:MouseEvent) {
