@@ -1,4 +1,5 @@
 package haxe.ui.parsers.ui.resolvers;
+import haxe.io.Path;
 
 class AssetResourceResolver extends ResourceResolver {
     private var _rootFile:String;
@@ -14,9 +15,9 @@ class AssetResourceResolver extends ResourceResolver {
             _rootDir += "/";
         }
     }
-    
+
     public override function getResourceData(r:String):String {
-        var f:String = _rootDir + r;
+        var f:String = Path.normalize(_rootDir + r);
         return ToolkitAssets.instance.getText(f);
     }
 }
