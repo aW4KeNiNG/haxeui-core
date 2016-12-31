@@ -219,6 +219,7 @@ class Button extends InteractiveComponent implements IClonable<Button> {
     }
 
     private function _onMouseDown(event:MouseEvent) {
+        event.cancel();
         if (FocusManager.instance.focusInfo != null && FocusManager.instance.focusInfo.currentFocus != null) {
             FocusManager.instance.focusInfo.currentFocus.focus = false;
         }
@@ -239,6 +240,7 @@ class Button extends InteractiveComponent implements IClonable<Button> {
     }
 
     private function _onMouseUp(event:MouseEvent) {
+        event.cancel();
         _down = false;
         if (_toggle == true) {
             return;

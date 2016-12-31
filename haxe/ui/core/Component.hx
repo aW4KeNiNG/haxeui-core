@@ -66,7 +66,6 @@ class Component extends ComponentBase implements IComponentBase implements IClon
         if (s.native != null && hasNativeEntry == true) {
             native = s.native;
         } else {
-            createDefaults();
             create();
         }
     }
@@ -75,6 +74,7 @@ class Component extends ComponentBase implements IComponentBase implements IClon
     // Construction
     //***********************************************************************************************************
     private function create() {
+        createDefaults();
         handleCreate(native);
         destroyChildren();
 
@@ -598,6 +598,22 @@ class Component extends ComponentBase implements IComponentBase implements IClon
         return cast match;
     }
 
+    public function findComponentsUnderPoint(screenX:Float, screenY:Float):Array<Component> {
+        var c:Array<Component> = [];
+        if (screenX >= this.screenLeft && screenX <= this.screenLeft + this.width
+            && screenY >= this.screenTop && screenY <= this.screenTop + this.height) {
+            for (child in childComponents) {
+                if (screenX >= child.screenLeft && screenX <= child.screenLeft + child.width
+                    && screenY >= child.screenTop && screenY <= child.screenTop + child.height) {
+                    c.push(child);
+                }
+                
+                c = c.concat(child.findComponentsUnderPoint(screenX, screenY));
+            }
+        }
+        return c;
+    }
+    
     /**
      Gets the index of a child component
     **/
@@ -1506,6 +1522,7 @@ class Component extends ComponentBase implements IComponentBase implements IClon
         if (_scriptEvents != null) {
             var script:String = _scriptEvents.get("onclick");
             if (script != null) {
+                event.cancel();
                 executeScriptCall(script);
             }
         }
@@ -1515,6 +1532,7 @@ class Component extends ComponentBase implements IComponentBase implements IClon
         if (_scriptEvents != null) {
             var script:String = _scriptEvents.get("onchange");
             if (script != null) {
+                event.cancel();
                 executeScriptCall(script);
             }
         }
@@ -1696,13 +1714,18 @@ class Component extends ComponentBase implements IComponentBase implements IClon
     //***********************************************************************************************************
     public function cloneComponent():Component {
         if (_ready == false) {
-            ready();
+            //ready();
         }
-        if (autoWidth == false) {
+        if (autoWidth == false && this.width > 0) {
             c.width = this.width;
         }
-        if (autoHeight == false) {
+        if (autoHeight == false && this.height > 0) {
             c.height = this.height;
+        }
+        if (_scriptEvents != null) {
+            for (k in _scriptEvents.keys()) {
+                c.addScriptEvent(k, _scriptEvents.get(k));
+            }
         }
     }
 
