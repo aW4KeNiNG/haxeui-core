@@ -250,7 +250,6 @@ class ScrollView extends Component implements IClonable<ScrollView> {
         if (!inScroll) {
             var arr = event.target.findComponentsUnderPoint(event.screenX, event.screenY);
             for (a in arr) {
-                trace(Type.getClass(a));
                 if (Std.is(a, InteractiveComponent)) {
                     return;
                 }
