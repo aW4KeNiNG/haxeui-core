@@ -1,5 +1,6 @@
 package haxe.ui.containers;
 
+import haxe.ui.core.InteractiveComponent;
 import haxe.ui.core.Screen;
 import haxe.ui.util.Point;
 import haxe.ui.components.HScroll;
@@ -267,7 +268,17 @@ class ScrollView extends Component implements IClonable<ScrollView> {
         if (_hscroll != null && _hscroll.hidden == false && inScroll == false) {
             inScroll = _hscroll.hitTest(event.screenX, event.screenY);
         }
-        //TODO - evitar mover si ha hecho click en un componente interactivo (ver cuales son)
+
+        if (!inScroll) {
+            var arr = event.target.findComponentsUnderPoint(event.screenX, event.screenY);
+            for (a in arr) {
+                trace(Type.getClass(a));
+                if (Std.is(a, InteractiveComponent)) {
+                    return;
+                }
+            }
+        }
+
 //        if ( _inertialScrolling == true ) {
 //            Screen.instance.removeEventListener(Event.ENTER_FRAME, _onInertiaEnterFrame);
 //            _inertiaSpeed.x = 0;
