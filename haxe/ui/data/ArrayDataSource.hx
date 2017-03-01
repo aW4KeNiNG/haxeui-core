@@ -38,7 +38,7 @@ class ArrayDataSource<T> extends DataSource<T> {
         return c;
     }
 
-    static public function fromArray<T>(array:Array<T>):DataSource<T>
+    static public function fromArray<T>(array:Array<T>):ArrayDataSource<T>
     {
         var dataSource = new ArrayDataSource<T>();
         dataSource._array = array.copy(); // shallow copy
