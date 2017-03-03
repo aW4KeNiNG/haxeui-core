@@ -55,12 +55,4 @@ class ArrayDataSource<T> extends DataSource<T> {
 
         return dataSource;
     }
-
-    static public function insert<T>(dataSource:ArrayDataSource<T>, element:T, index:Int) {
-        if (index > dataSource._array.length) {
-            index = dataSource._array.length;
-        }
-
-        dataSource._array.insert(index, element);
-    }
 }
