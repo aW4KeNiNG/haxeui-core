@@ -11,6 +11,7 @@ class UIEvent extends EventBase {
     public var bubble(default, default):Bool;
     public var type(default, default):String;
     public var target(default, default):Component;
+    public var data(default, default):Dynamic;
 
     public var canceled(default, default):Bool;
 
@@ -33,6 +34,7 @@ class UIEvent extends EventBase {
         c.canceled = this.canceled;
         c.type = this.type;
         c.target = this.target;
+        c.data = this.data;
         postClone(c);
         return c;
     }

@@ -3,16 +3,16 @@ package haxe.ui.containers;
 import haxe.ui.core.ClassFactory;
 import haxe.ui.core.BasicItemRenderer;
 import haxe.ui.core.Component;
-import haxe.ui.core.IClonable;
 import haxe.ui.core.IDataComponent;
 import haxe.ui.core.InteractiveComponent;
 import haxe.ui.core.ItemRenderer;
 import haxe.ui.core.MouseEvent;
 import haxe.ui.core.UIEvent;
+import haxe.ui.data.ArrayDataSource;
 import haxe.ui.data.DataSource;
 import haxe.ui.data.transformation.NativeTypeTransformer;
 
-class ListView extends ScrollView implements IDataComponent implements IClonable<ListView> {
+class ListView extends ScrollView implements IDataComponent {
     private var _itemRenderer:ItemRenderer;
 
     public function new() {
@@ -29,6 +29,13 @@ class ListView extends ScrollView implements IDataComponent implements IClonable
         _contents.addClass("listview-contents");
     }
 
+    private override function onReady() {
+        super.onReady();
+        if (_itemRenderer == null) {
+            addComponent(new BasicItemRenderer());
+        }
+    }
+    
     public override function addComponent(child:Component):Component {
         var r = null;
         if (Std.is(child, ItemRenderer) && (_itemRenderer == null && _itemRendererFunction == null)) {

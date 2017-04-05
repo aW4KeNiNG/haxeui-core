@@ -971,7 +971,7 @@ class Component extends ComponentBase implements IComponentBase implements IClon
         return INTERACTIVE_EVENTS.indexOf(type) != -1;
     }
     
-    private function disableInteractivity(disable:Bool, styleName:String = ":disabled") {
+    private function disableInteractivity(disable:Bool, styleName:String = null) {
         if (disable == _disabled) {
             return;
         }
@@ -1178,6 +1178,32 @@ class Component extends ComponentBase implements IComponentBase implements IClon
 
     @style      public var opacity:Null<Float>;
 
+    public var horizontalAlign(get, set):String;
+    private function get_horizontalAlign():String {
+        return customStyle.horizontalAlign;
+    }
+    private function set_horizontalAlign(value:String):String {
+        customStyle.horizontalAlign = value;
+        invalidateStyle();
+        if (parentComponent != null) {
+            parentComponent.invalidateLayout();
+        }
+        return value;
+    }
+    
+    public var verticalAlign(get, set):String;
+    private function get_verticalAlign():String {
+        return customStyle.verticalAlign;
+    }
+    private function set_verticalAlign(value:String):String {
+        customStyle.verticalAlign = value;
+        invalidateStyle();
+        if (parentComponent != null) {
+            parentComponent.invalidateLayout();
+        }
+        return value;
+    }
+    
     //***********************************************************************************************************
     // Size related
     //***********************************************************************************************************
@@ -1756,13 +1782,19 @@ class Component extends ComponentBase implements IComponentBase implements IClon
         return value;
     }
 
+    private var __onChange:UIEvent->Void;
     /**
      Utility property to add a single `UIEvent.CHANGE` event
     **/
     @:dox(group = "Event related properties and methods")
     public var onChange(null, set):UIEvent->Void;
     private function set_onChange(value:UIEvent->Void):UIEvent->Void {
+        if (__onChange != null) {
+            unregisterEvent(UIEvent.CHANGE, __onChange);
+            __onChange = null;
+        }
         registerEvent(UIEvent.CHANGE, value);
+        __onChange = value;
         return value;
     }
 
@@ -1985,7 +2017,7 @@ class ComponentDefaultDisabledBehaviour extends Behaviour {
             return;
         }
 
-        _component.disableInteractivity(value);
+        _component.disableInteractivity(value, ":disabled");
     }
 
     public override function get():Variant {
