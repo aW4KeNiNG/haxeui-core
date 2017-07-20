@@ -36,7 +36,7 @@ class ListView extends ScrollView implements IDataComponent {
         _contents.percentWidth = 100;
         _contents.addClass("listview-contents");
     }
-    
+
     private override function onReady() {
         super.onReady();
         syncUI();
@@ -188,17 +188,7 @@ class ListView extends ScrollView implements IDataComponent {
         return behaviourGet("dataSource");
     }
     private function set_dataSource(value:DataSource<Dynamic>):DataSource<Dynamic> {
-        if (_dataSource != null) {
-            _dataSource.onChange = null;
-        }
-
-        _dataSource = value;
         behaviourSet("dataSource", value);
-
-        if (_dataSource != null) {
-            _dataSource.transformer = new NativeTypeTransformer();
-        }
-
         return value;
     }
 
@@ -285,11 +275,20 @@ class ListViewDefaultDataSourceBehaviour extends Behaviour {
 
     public override function set(value:Variant) {
         var listView:ListView = cast(_component, ListView);
+
+        if (listView._dataSource == null) {
+            listView._dataSource.onChange = null;
+        }
+
+        listView._dataSource = value;
+
+        if (listView._dataSource != null) {
+            listView._dataSource.transformer = new NativeTypeTransformer();
+            listView._dataSource.onChange = listView.onDataSourceChanged;
+        }
+
 		if (listView._ready) {
 			listView.syncUI();
 		}
-        if (listView._dataSource != null) {
-            listView._dataSource.onChange = listView.onDataSourceChanged;
-        }
     }
 }
