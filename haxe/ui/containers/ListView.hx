@@ -1,5 +1,6 @@
 package haxe.ui.containers;
 
+import haxe.ui.core.Behaviour;
 import haxe.ui.core.ClassFactory;
 import haxe.ui.core.BasicItemRenderer;
 import haxe.ui.core.Component;
@@ -11,13 +12,20 @@ import haxe.ui.core.UIEvent;
 import haxe.ui.data.ArrayDataSource;
 import haxe.ui.data.DataSource;
 import haxe.ui.data.transformation.NativeTypeTransformer;
+import haxe.ui.util.Variant;
 
 class ListView extends ScrollView implements IDataComponent {
-    private var _itemRenderer:ItemRenderer;
-
     public function new() {
         super();
     }
+
+    private override function createDefaults() {
+        super.createDefaults();
+        defaultBehaviours([
+            "dataSource" => new ListViewDefaultDataSourceBehaviour(this)
+        ]);
+    }
+
 
     private override function createChildren() {
         super.createChildren();
@@ -29,6 +37,11 @@ class ListView extends ScrollView implements IDataComponent {
         _contents.addClass("listview-contents");
     }
     
+    private override function onReady() {
+        super.onReady();
+        syncUI();
+    }
+
     public override function addComponent(child:Component):Component {
         var r = null;
         if (Std.is(child, ItemRenderer) && (_itemRenderer == null && _itemRendererFunction == null)) {
@@ -61,23 +74,42 @@ class ListView extends ScrollView implements IDataComponent {
             }
         }
         
+        selectedItem = cast(event.target, ItemRenderer);
+    }
+
+    public var selectedIndex(get, set):Int;
+    private function get_selectedIndex():Int {
+        if (_currentSelection == null) {
+            return -1;
+        }
+        return contents.childComponents.indexOf(_currentSelection);
+    }
+    private function set_selectedIndex(value:Int):Int {
+        var item:ItemRenderer = cast(contents.childComponents[value], ItemRenderer);
+        selectedItem = item;
+        return value;
+    }
+
+    public var selectedItem(get, set):ItemRenderer;
+    private function get_selectedItem():ItemRenderer {
+        return _currentSelection;
+    }
+    private function set_selectedItem(value:ItemRenderer):ItemRenderer {
         if (_currentSelection != null) {
             _currentSelection.removeClass(":selected");
         }
 
-        _currentSelection = cast event.target;
-        _currentSelection.addClass(":selected");
-        dispatch(new UIEvent(UIEvent.CHANGE));
-    }
-
-    public var selectedItem(get, null):ItemRenderer;
-    private function get_selectedItem():ItemRenderer {
-        return _currentSelection;
+        _currentSelection = value;
+        if (_currentSelection != null) {
+            _currentSelection.addClass(":selected");
+            dispatch(new UIEvent(UIEvent.CHANGE));
+        }
+        return value;
     }
 
     public function resetSelection() {
         if (_currentSelection != null) {
-            _currentSelection.removeClass(":selected");
+            _currentSelection.removeClass(":selected", true, true);
             _currentSelection = null;
         }
     }
@@ -137,10 +169,23 @@ class ListView extends ScrollView implements IDataComponent {
         return value;
     }
 
+    private var _itemRenderer:ItemRenderer;
+	public var itemRendererClass(get, set):Class<ItemRenderer>;
+	private function get_itemRendererClass():Class<ItemRenderer> {
+		return Type.getClass(_itemRenderer);
+	}
+	private function set_itemRendererClass(value:Class<ItemRenderer>):Class<ItemRenderer> {
+		_itemRenderer = Type.createInstance(value, []);
+		if (_ready) {
+			syncUI();
+		}
+		return value;
+	}
+
     private var _dataSource:DataSource<Dynamic>;
     public var dataSource(get, set):DataSource<Dynamic>;
     private function get_dataSource():DataSource<Dynamic> {
-        return _dataSource;
+        return behaviourGet("dataSource");
     }
     private function set_dataSource(value:DataSource<Dynamic>):DataSource<Dynamic> {
         if (_dataSource != null) {
@@ -148,13 +193,11 @@ class ListView extends ScrollView implements IDataComponent {
         }
 
         _dataSource = value;
+        behaviourSet("dataSource", value);
 
         if (_dataSource != null) {
             _dataSource.transformer = new NativeTypeTransformer();
-            _dataSource.onChange = onDataSourceChanged;
         }
-
-        syncUI();
 
         return value;
     }
@@ -226,3 +269,27 @@ class ListView extends ScrollView implements IDataComponent {
 }
 
 typedef ItemRendererFunction = Dynamic->ClassFactory<ItemRenderer>;
+
+//***********************************************************************************************************
+// Default behaviours
+//***********************************************************************************************************
+
+@:dox(hide)
+@:access(haxe.ui.containers.ListView)
+class ListViewDefaultDataSourceBehaviour extends Behaviour {
+    public override function get():Variant {
+        var listView:ListView = cast(_component, ListView);
+        listView._dataSource.onChange = listView.onDataSourceChanged;
+        return listView._dataSource;
+    }
+
+    public override function set(value:Variant) {
+        var listView:ListView = cast(_component, ListView);
+		if (listView._ready) {
+			listView.syncUI();
+		}
+        if (listView._dataSource != null) {
+            listView._dataSource.onChange = listView.onDataSourceChanged;
+        }
+    }
+}

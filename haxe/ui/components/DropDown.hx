@@ -20,7 +20,6 @@ class DropDown extends Button implements IDataComponent {
 
     public function new() {
         super();
-        addClass("button"); // TODO: shouldnt have to do this
         toggle = true;
         registerEvent(MouseEvent.CLICK, onMouseClick);
     }
@@ -94,7 +93,7 @@ class DropDown extends Button implements IDataComponent {
                 _selectedIndex = 0;
             }
 
-            if(_selectedIndex >= 0) {
+            if (_selectedIndex >= 0) {
                 text = _dataSource.get(_selectedIndex).value;
             }
         }

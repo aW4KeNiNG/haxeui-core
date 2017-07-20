@@ -22,6 +22,11 @@ class Label extends Component {
     }
 
     //***********************************************************************************************************
+    // Styles
+    //***********************************************************************************************************
+    @:style(layout)           public var textAlign:Null<String>;
+    
+    //***********************************************************************************************************
     // Internals
     //***********************************************************************************************************
     private override function createDefaults() {
@@ -55,18 +60,7 @@ class Label extends Component {
     private override function applyStyle(style:Style) {
         super.applyStyle(style);
         if (hasTextDisplay() == true) {
-            if (style.color != null) {
-                getTextDisplay().color = style.color;
-            }
-            if (style.fontName != null) {
-                getTextDisplay().fontName = style.fontName;
-            }
-            if (style.fontSize != null) {
-                getTextDisplay().fontSize = style.fontSize;
-            }
-            if (style.textAlign != null) {
-                getTextDisplay().textAlign = style.textAlign;
-            }
+            getTextDisplay().applyStyle(style);
         }
     }
 }
@@ -126,7 +120,7 @@ class LabelDefaultTextBehaviour extends Behaviour {
         }
 
         var label:Label = cast _component;
-        label.getTextDisplay().text = value;
+        label.getTextDisplay().text = '${value}';
         label.invalidateDisplay();
     }
 }
