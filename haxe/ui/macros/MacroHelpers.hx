@@ -327,6 +327,9 @@ class MacroHelpers {
                     var subDirs:Array<String> = sys.FileSystem.readDirectory(path);
                     var continueSearch = true;
                     for (subDir in subDirs) {
+                        if(subDir.toLowerCase() == "export" || subDir.toLowerCase() == "build"){
+                            continue;
+                        }
                         var fileName = subDir;
                         if (StringTools.endsWith(path, "/") == false && StringTools.endsWith(path, "\\") == false) {
                             subDir = path + "/" + subDir;
