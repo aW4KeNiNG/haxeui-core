@@ -12,11 +12,11 @@ class BackendMacros {
     macro public static function processBackend():Expr {
         loadBackendProperties();
 
-        var code:String = "function() {\n";
+        var code:String = "(function() {\n";
         for (name in properties.names()) {
             code += 'Toolkit.backendProperties.setProp("${name}", "${properties.getProp(name)}");\n';
         }
-        code += "}()\n";
+        code += "})()\n";
         return Context.parseInlineString(code, Context.currentPos());
     }
 
