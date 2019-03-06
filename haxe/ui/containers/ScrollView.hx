@@ -302,16 +302,22 @@ class ScrollView extends Component {
     private var _inertialTimer:Timer;
 
     private var _offsetX:Float = 0;
-    private var _screenOffsetX:Float;
+    private var _referenceX:Float;
+    private var _velocityX:Float;
+    private var _frameX:Float;
     private var _inertialAmplitudeX:Float = 0;
     private var _inertialTargetX:Float = 0;
     private var _inertiaDirectionX:Int;
     
     private var _offsetY:Float = 0;
-    private var _screenOffsetY:Float;
+    private var _referenceY:Float;
+    private var _velocityY:Float;
+    private var _frameY:Float;
     private var _inertialAmplitudeY:Float = 0;
     private var _inertialTargetY:Float = 0;
     private var _inertiaDirectionY:Int;
+
+    private var _ticker:haxe.Timer;
     
     private function _onMouseDown(event:MouseEvent) {
         if ((_hscroll == null || _hscroll.hidden == true) && (_vscroll == null || _vscroll.hidden == true)) {
@@ -330,20 +336,44 @@ class ScrollView extends Component {
         _offsetY = vscrollPos + event.screenY;
 
         if (_scrollMode == ScrollMode.INERTIAL) {
-            _inertialTargetX = hscrollPos;
-            _inertialTargetY = vscrollPos;
-            _inertialAmplitudeX = 0;
-            _inertialAmplitudeY = 0;
-            
-            if (_inertialTimer != null) {
-                _inertialTimer.stop();
-                _inertialTimer = null;
-            }
-            
-            _screenOffsetX = event.screenX;
-            _screenOffsetY = event.screenY;
-            
+            _referenceX = event.screenX;
+            _referenceY = event.screenY;
+
+            _velocityX = _velocityY = 0;
+            _inertialAmplitudeX = _inertialAmplitudeY = 0;
+
+
+            _offsetX = hscrollPos;
+            _offsetY = vscrollPos;
+
+            _frameX = _offsetX;
+            _frameY = _offsetY;
+
             _inertialTimestamp = haxe.Timer.stamp();
+
+            if(_ticker != null)
+            {
+                _ticker.stop();
+                _ticker = null;
+            }
+
+            _ticker = new haxe.Timer(100);
+            _ticker.run = function(){
+                var now = haxe.Timer.stamp();
+                var elapsed = (now - _inertialTimestamp) * 1000;
+                _inertialTimestamp = now;
+                var deltaX = _offsetX - _frameX;
+                var deltaY = _offsetY - _frameY;
+                _frameX = _offsetX;
+                _frameY = _offsetY;
+
+                _inertialTimestamp = haxe.Timer.stamp();
+
+                var vX = 1000 * deltaX / (1 + elapsed);
+                var vY = 1000 * deltaY / (1 + elapsed);
+                _velocityX = 0.8 * vX + 0.2 * _velocityX;
+                _velocityY = 0.8 * vY + 0.2 * _velocityY;
+            };
         }
         
         Screen.instance.registerEvent(MouseEvent.MOUSE_MOVE, _onMouseMove);
@@ -353,8 +383,26 @@ class ScrollView extends Component {
     }
     
     private function _onMouseMove(event:MouseEvent) {
-        hscrollPos = _offsetX - event.screenX;
-        vscrollPos = _offsetY - event.screenY;
+        if(_scrollMode == ScrollMode.INERTIAL) {
+            var deltaX:Float = _referenceX - event.screenX;
+            var deltaY:Float = _referenceY - event.screenY;
+
+            if(deltaX > 2 || deltaX < -2) {
+                _referenceX = event.screenX;
+                hscrollPos = _offsetX = _offsetX + deltaX;
+            }
+
+            if(deltaY > 2 || deltaY < -2) {
+                _referenceY = event.screenY;
+                vscrollPos = _offsetY = _offsetY + deltaY;
+            }
+
+        }
+        else {
+            hscrollPos = _offsetX - event.screenX;
+            vscrollPos = _offsetY - event.screenY;
+        }
+
         dispatch(new ScrollEvent(ScrollEvent.CHANGE));
     }
     
@@ -363,52 +411,28 @@ class ScrollView extends Component {
         Screen.instance.unregisterEvent(MouseEvent.MOUSE_UP, _onMouseUp);
         
         if (_scrollMode == ScrollMode.INERTIAL) {
-            var now = haxe.Timer.stamp();
-            var elapsed = (now - _inertialTimestamp) * 1000;
-            
-            var deltaX = Math.abs(_screenOffsetX - event.screenX);
-            var deltaY = Math.abs(_screenOffsetY - event.screenY);
-
-            _inertiaDirectionX = (_screenOffsetX - event.screenX) < 0 ? 0 : 1;
-            var velocityX = deltaX / elapsed;
-            var v = 1000 * deltaX / (1 + elapsed);
-            velocityX = 0.8 * v + 0.2 * velocityX;
-            
-            _inertiaDirectionY = (_screenOffsetY - event.screenY) < 0 ? 0 : 1;
-            var velocityY = deltaY / elapsed;
-            var v = 1000 * deltaY / (1 + elapsed);
-            velocityY = 0.8 * v + 0.2 * velocityY;
-
-            if (velocityX <= 75 && velocityY <= 75) {
-                return;
+            if(_ticker != null)
+            {
+                _ticker.stop();
+                _ticker = null;
             }
-            
+
+            _inertialTargetX = _offsetX;
+            if(_velocityX > 10 || _velocityX < -10) {
+                _inertialAmplitudeX = 0.8 * _velocityX;
+                _inertialTargetX = _offsetX + _inertialAmplitudeX;
+            }
+
+            _inertialTargetY = _offsetY;
+            if(_velocityY > 10 || _velocityY < -10) {
+                _inertialAmplitudeY = 0.8 * _velocityY;
+                _inertialTargetY = _offsetY + _inertialAmplitudeY;
+            }
+
+            _inertialAmplitudeX = _inertialTargetX - _offsetX;
+            _inertialAmplitudeY = _inertialTargetY - _offsetY;
+
             _inertialTimestamp = haxe.Timer.stamp();
-
-            _inertialAmplitudeX = 0.8 * velocityX;
-            if (_inertiaDirectionX == 0) {
-                _inertialTargetX = Math.round(hscrollPos - _inertialAmplitudeX);
-            } else {
-                _inertialTargetX = Math.round(hscrollPos + _inertialAmplitudeX);
-            }
-            
-            _inertialAmplitudeY = 0.8 * velocityY;
-            if (_inertiaDirectionY == 0) {
-                _inertialTargetY = Math.round(vscrollPos - _inertialAmplitudeY);
-            } else {
-                _inertialTargetY = Math.round(vscrollPos + _inertialAmplitudeY);
-            }
-            
-            if (hscrollPos == _inertialTargetX && vscrollPos == _inertialTargetY) {
-                return;
-            }
-
-            if (hscrollPos == _inertialTargetX) {
-                _inertialAmplitudeX = 0;
-            }
-            if (vscrollPos == _inertialTargetY) {
-                _inertialAmplitudeY = 0;
-            }
 
             _inertialTimer = new Timer(10, inertialScroll); //TODO - FRAME event on demand
         } else {
@@ -416,46 +440,31 @@ class ScrollView extends Component {
         }
     }
 
-    private function inertialScroll() {
-        var elapsed = (haxe.Timer.stamp() - _inertialTimestamp) * 1000;
-
-        var finishedX = false;
-        if (_inertialAmplitudeX != 0) {
-            var deltaX = -_inertialAmplitudeX * Math.exp(-elapsed / INERTIAL_TIME_CONSTANT);
-            if (deltaX > 0.5 || deltaX < -0.5) {
-                var oldPos = hscrollPos;
-                if (_inertiaDirectionX == 0) {
-                    hscrollPos = _inertialTargetX - deltaX;
-                } else {
-                    hscrollPos = _inertialTargetX + deltaX;
-                }
-                finishedX = hscrollPos == oldPos;
+    private function inertialScroll():Void
+    {
+        var elapsed:Float = (haxe.Timer.stamp() - _inertialTimestamp) * 1000;
+        var finished:Bool = true;
+        if(_inertialAmplitudeX != 0) {
+            var deltaX:Float = -_inertialAmplitudeX * Math.exp(-elapsed / INERTIAL_TIME_CONSTANT);
+            if(deltaX > 0.5 || deltaX < -0.5) {
+                hscrollPos = _offsetX = _inertialTargetX + deltaX;
+                finished = false;
             } else {
-                finishedX = true;
+                hscrollPos = _offsetX = _inertialTargetX;
             }
-        } else {
-            finishedX = true;
         }
 
-        var finishedY = false;
-        if (_inertialAmplitudeY != 0) {
-            var deltaY = -_inertialAmplitudeY * Math.exp(-elapsed / INERTIAL_TIME_CONSTANT);
-            if (deltaY > 0.5 || deltaY < -0.5) {
-                var oldPos = vscrollPos;
-                if (_inertiaDirectionY == 0) {
-                    vscrollPos = _inertialTargetY - deltaY;
-                } else {
-                    vscrollPos = _inertialTargetY + deltaY;
-                }
-                finishedY = vscrollPos == oldPos;
+        if(_inertialAmplitudeY != 0) {
+            var deltaY:Float = -_inertialAmplitudeY * Math.exp(-elapsed / INERTIAL_TIME_CONSTANT);
+            if(deltaY > 0.5 || deltaY < -0.5) {
+                vscrollPos = _offsetY = _inertialTargetY + deltaY;
+                finished = false;
             } else {
-                finishedY = true;
+                vscrollPos = _offsetY = _inertialTargetY;
             }
-        } else {
-            finishedY = true;
         }
 
-        if (finishedX == true && finishedY == true) {
+        if(finished) {
             _inertialTimer.stop();
             _inertialTimer = null;
 
