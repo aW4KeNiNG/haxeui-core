@@ -153,7 +153,7 @@ class LocaleManager {
             }
         }
 
-        return localeString;
+        return localeString != null ? localeString : key;
     }
 
     private function _copyMap(fromMap:Map<String, String>, toMap:Map<String, String>) {
